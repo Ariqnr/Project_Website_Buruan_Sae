@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html.dark {
+        color-scheme: dark;
+    }
+
+    html.dark body {
+        @apply bg-gray-900 text-gray-100;
+    }
+
+    /* Adaptasi otomatis kartu, tabel, dan elemen umum di mode gelap */
+    html.dark .bg-white {
+        background-color: #1f2937 !important; /* gray-800 */
+    }
+
+    html.dark .bg-gray-100 {
+        background-color: #111827 !important; /* gray-900 */
+    }
+
+    html.dark .bg-gray-50,
+    html.dark .bg-gray-50\/70,
+    html.dark .bg-gray-50\/50 {
+        background-color: #374151 !important; /* gray-700 */
+    }
+
+    html.dark .bg-green-50 {
+        background-color: #064e3b !important; /* emerald-900 */
+    }
+
+    html.dark .text-gray-900,
+    html.dark .text-gray-800 {
+        color: #f9fafb !important; /* gray-50 */
+    }
+
+    html.dark .text-gray-700,
+    html.dark .text-gray-600 {
+        color: #d1d5db !important; /* gray-300 */
+    }
+
+    html.dark .text-gray-500,
+    html.dark .text-gray-400 {
+        color: #9ca3af !important; /* gray-400 */
+    }
+
+    html.dark .text-green-800,
+    html.dark .text-green-700 {
+        color: #4ade80 !important; /* green-400 */
+    }
+
+    html.dark .border-gray-100,
+    html.dark .border-gray-200,
+    html.dark .border-gray-300 {
+        border-color: #374151 !important; /* gray-700 */
+    }
+
+    html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+        border-color: #374151 !important;
+    }
+
+    html.dark input:not([type="checkbox"]):not([type="radio"]),
+    html.dark select,
+    html.dark textarea {
+        background-color: #111827 !important;
+        color: #f9fafb !important;
+        border-color: #4b5563 !important;
+    }
+
+    html.dark input::placeholder,
+    html.dark textarea::placeholder {
+        color: #6b7280 !important;
+    }
+
+    /* ApexCharts di mode gelap */
+    html.dark .apexcharts-text,
+    html.dark .apexcharts-title-text,
+    html.dark .apexcharts-subtitle-text,
+    html.dark .apexcharts-legend-text {
+        fill: #e5e7eb !important;
+        color: #e5e7eb !important;
+    }
+
+    html.dark .apexcharts-tooltip {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+        color: #f9fafb !important;
+    }
+
+    html.dark .apexcharts-tooltip-title {
+        background: #111827 !important;
+        border-color: #374151 !important;
+        color: #f9fafb !important;
+    }
+}
