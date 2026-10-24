@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\ActivityLog;
+use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -42,8 +45,33 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        $email = $this->string('email')->toString();
+        $user = User::where('email', $email)->first();
+
+        if ($user !== null && ! $user->is_active) {
+            ActivityLogger::catat(
+                aksi: ActivityLog::AKSI_LOGIN_GAGAL,
+                deskripsi: "Percobaan masuk ditolak (akun nonaktif) untuk email {$email}",
+                objek: $user,
+                dataBaru: ['email' => $email],
+                userId: $user->id,
+            );
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda sedang dinonaktifkan. Silakan hubungi admin.',
+            ]);
+        }
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
+
+            ActivityLogger::catat(
+                aksi: ActivityLog::AKSI_LOGIN_GAGAL,
+                deskripsi: "Percobaan masuk gagal untuk email {$email}",
+                objek: $user,
+                dataBaru: ['email' => $email],
+                userId: $user?->id,
+            );
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
@@ -51,6 +79,17 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        /** @var User|null $loggedInUser */
+        $loggedInUser = Auth::user();
+        if ($loggedInUser !== null) {
+            ActivityLogger::catat(
+                aksi: ActivityLog::AKSI_LOGIN_BERHASIL,
+                deskripsi: "{$loggedInUser->name} berhasil masuk ke sistem",
+                objek: $loggedInUser,
+                userId: $loggedInUser->id,
+            );
+        }
     }
 
     /**

@@ -21,7 +21,7 @@ class JadwalPenjemuranFactory extends Factory
         $mulai = fake()->dateTimeBetween('-1 month', '+1 week');
 
         return [
-            'sampah_id' => Sampah::factory(),
+            'sampah_id' => Sampah::factory()->state(['jenis' => Sampah::JENIS_ORGANIK]),
             'tanggal_mulai' => $mulai->format('Y-m-d'),
             'tanggal_selesai' => (clone $mulai)->modify('+'.fake()->numberBetween(1, 7).' days')->format('Y-m-d'),
             'catatan' => fake()->optional(0.3)->sentence(),

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SampahRequest;
+use App\Models\ActivityLog;
 use App\Models\Sampah;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -11,6 +13,19 @@ use Illuminate\View\View;
 
 class SampahController extends Controller
 {
+    /**
+     * Kolom sampah yang disimpan ke dalam log perubahan.
+     *
+     * @var list<string>
+     */
+    private const LOG_COLUMNS = [
+        'tanggal_masuk',
+        'jenis',
+        'berat_kg',
+        'status',
+        'catatan',
+    ];
+
     /**
      * Tampilkan daftar data sampah dengan pagination dan filter.
      */
@@ -66,7 +81,17 @@ class SampahController extends Controller
         $validated = $request->validated();
         $validated['user_id'] = $request->user()->id;
 
-        Sampah::create($validated);
+        $sampah = Sampah::create($validated);
+
+        $actor = $request->user()->name;
+        $berat = number_format((float) $sampah->berat_kg, 2, ',', '.');
+
+        ActivityLogger::catat(
+            aksi: ActivityLog::AKSI_TAMBAH,
+            deskripsi: "{$actor} menambah data sampah {$sampah->jenis} {$berat} kg",
+            objek: $sampah,
+            dataBaru: ActivityLogger::ringkasModel($sampah, self::LOG_COLUMNS),
+        );
 
         return redirect()
             ->route('sampah.index')
@@ -91,7 +116,21 @@ class SampahController extends Controller
      */
     public function update(SampahRequest $request, Sampah $sampah): RedirectResponse
     {
+        $dataLama = ActivityLogger::ringkasModel($sampah, self::LOG_COLUMNS);
+
         $sampah->update($request->validated());
+
+        $dataBaru = ActivityLogger::ringkasModel($sampah, self::LOG_COLUMNS);
+        $actor = $request->user()->name;
+        $berat = number_format((float) $sampah->berat_kg, 2, ',', '.');
+
+        ActivityLogger::catat(
+            aksi: ActivityLog::AKSI_UBAH,
+            deskripsi: "{$actor} mengubah data sampah {$sampah->jenis} {$berat} kg",
+            objek: $sampah,
+            dataLama: $dataLama,
+            dataBaru: $dataBaru,
+        );
 
         return redirect()
             ->route('sampah.index')
@@ -101,11 +140,25 @@ class SampahController extends Controller
     /**
      * Hapus data sampah dari database (Hanya Admin).
      */
-    public function destroy(Sampah $sampah): RedirectResponse
+    public function destroy(Request $request, Sampah $sampah): RedirectResponse
     {
         Gate::authorize('delete', $sampah);
 
+        $dataLama = ActivityLogger::ringkasModel($sampah, self::LOG_COLUMNS);
+        $id = $sampah->id;
+        $jenis = $sampah->jenis;
+        $berat = number_format((float) $sampah->berat_kg, 2, ',', '.');
+        $actor = $request->user()?->name ?? 'Admin';
+
         $sampah->delete();
+
+        ActivityLogger::catat(
+            aksi: ActivityLog::AKSI_HAPUS,
+            deskripsi: "{$actor} menghapus data sampah {$jenis} {$berat} kg",
+            dataLama: $dataLama,
+            objekTipe: 'Sampah',
+            objekId: $id,
+        );
 
         return redirect()
             ->route('sampah.index')

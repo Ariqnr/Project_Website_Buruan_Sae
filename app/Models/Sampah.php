@@ -7,6 +7,7 @@ use Database\Factories\SampahFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,8 @@ class Sampah extends Model
     public const STATUS_DIKELOLA = 'dikelola';
 
     public const STATUS_SELESAI = 'selesai';
+
+    public const JENIS_ORGANIK = 'Organik';
 
     /**
      * Daftar status beserta label tampilannya.
@@ -84,6 +87,16 @@ class Sampah extends Model
     public function jadwalPenjemuran(): HasMany
     {
         return $this->hasMany(JadwalPenjemuran::class);
+    }
+
+    /**
+     * Filter hanya sampah dengan kategori Organik (untuk penjemuran).
+     *
+     * @param  Builder<Sampah>  $query
+     */
+    public function scopeOrganik(Builder $query): void
+    {
+        $query->where('jenis', self::JENIS_ORGANIK);
     }
 
     /**

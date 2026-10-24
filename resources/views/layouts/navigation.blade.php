@@ -1,11 +1,17 @@
 @php
+    $user = Auth::user();
     $menu = [
         ['label' => 'Dashboard', 'route' => 'dashboard', 'active' => 'dashboard'],
         ['label' => 'Data Sampah', 'route' => 'sampah.index', 'active' => 'sampah.*'],
         ['label' => 'Jadwal Penjemuran', 'route' => 'jadwal.index', 'active' => 'jadwal.*'],
         ['label' => 'Laporan', 'route' => 'laporan.index', 'active' => 'laporan.*'],
     ];
-    $user = Auth::user();
+
+    if ($user->isAdmin()) {
+        $menu[] = ['label' => 'Pengguna', 'route' => 'pengguna.index', 'active' => 'pengguna.*'];
+        $menu[] = ['label' => 'Log Aktivitas', 'route' => 'log.index', 'active' => 'log.*'];
+    }
+
     $roleLabel = \App\Models\User::ROLES[$user->role] ?? ucfirst($user->role);
 @endphp
 

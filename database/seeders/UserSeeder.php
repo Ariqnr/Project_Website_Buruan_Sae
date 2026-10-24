@@ -18,6 +18,8 @@ class UserSeeder extends Seeder
                 'name' => 'Admin Buruan Sae',
                 'password' => 'password', // otomatis di-hash oleh cast 'hashed'
                 'role' => User::ROLE_ADMIN,
+                'is_active' => true,
+                'must_change_password' => false,
                 'email_verified_at' => now(),
             ],
         );
@@ -28,6 +30,8 @@ class UserSeeder extends Seeder
                 'name' => 'Pengelola Buruan Sae',
                 'password' => 'password',
                 'role' => User::ROLE_PENGELOLA,
+                'is_active' => true,
+                'must_change_password' => false,
                 'email_verified_at' => now(),
             ],
         );

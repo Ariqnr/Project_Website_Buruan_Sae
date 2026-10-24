@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\ActivityLog;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,6 +38,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = $request->user();
+
+        if ($user !== null) {
+            ActivityLogger::catat(
+                aksi: ActivityLog::AKSI_LOGOUT,
+                deskripsi: "{$user->name} keluar dari sistem",
+                objek: $user,
+                userId: $user->id,
+            );
+        }
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
